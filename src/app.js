@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const path = require("path");
 const app = express();
+require('./config/config')
 
 // Set more security to request
 app.use(helmet())
@@ -23,5 +24,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Configure routes
 app.use('/user' , require('./routes/user.route'));
+app.use('/rol' , require('./routes/rol.route'));
+app.use('/product' , require('./routes/product.route'));
 
 module.exports = app;

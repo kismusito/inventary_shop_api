@@ -1,11 +1,20 @@
 const userMethods = {};
 require("dotenv").config();
 const User = require("../models/user.model");
+const Rol = require("../models/rol.model");
 const jwt = require("jsonwebtoken");
 
 async function getUser(param) {
     try {
         return User.findOne(param);
+    } catch (error) {
+        return false;
+    }
+}
+
+async function getRol(_id) {
+    try {
+        return Rol.findById(_id);
     } catch (error) {
         return false;
     }
@@ -49,40 +58,59 @@ userMethods.login = async (req, res) => {
 };
 
 userMethods.register = async (req, res) => {
-    const { username, email, password, name } = req.body;
-    if (username && email && password) {
-        const verifyUsername = await getUser({ username });
-        if (verifyUsername) {
-            return res.status(400).json({
-                status: false,
-                message: "The username has already taken",
-            });
-        }
-        const verifyEmail = await getUser({ email });
-        if (verifyEmail) {
-            return res.status(400).json({
-                status: false,
-                message: "The email has already taken",
-            });
-        }
+    const { rolID, username, email, password, name } = req.body;
+    if (rolID && username && email && password) {
+        try {
+            const rol = await getRol(rolID);
+            if (rol) {
+                const verifyUsername = await getUser({ username });
+                if (verifyUsername) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "The username has already taken",
+                    });
+                }
+                const verifyEmail = await getUser({ email });
+                if (verifyEmail) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "The email has already taken",
+                    });
+                }
 
-        const user = new User({
-            username,
-            email,
-            password,
-            name,
-        });
-        user.password = await user.encryptPassword(user.password);
+                const user = new User({
+                    rol: {
+                        rolID: rol._id,
+                        name: rol.name,
+                    },
+                    username,
+                    email,
+                    password,
+                    name,
+                });
+                user.password = await user.encryptPassword(user.password);
 
-        if (await user.save()) {
-            return res.status(200).json({
-                status: true,
-                message: "User created successfull.",
-            });
-        } else {
+                if (await user.save()) {
+                    return res.status(200).json({
+                        status: true,
+                        message: "User created successfull.",
+                    });
+                } else {
+                    return res.status(400).json({
+                        status: false,
+                        message: "There was a problem, please try again.",
+                    });
+                }
+            } else {
+                return res.status(400).json({
+                    status: false,
+                    message: "The rol not exist",
+                });
+            }
+        } catch (error) {
             return res.status(400).json({
                 status: false,
-                message: "There was a problem, please try again.",
+                message: "There was an error, please try again",
             });
         }
     } else {
