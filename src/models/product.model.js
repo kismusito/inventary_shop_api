@@ -10,10 +10,10 @@ const productSchema = new Schema({
         required: true,
     },
     poster: {
-        type: String,
+        type: Object,
         required: true,
     },
-    gallery: String,
+    gallery: Array,
     price: {
         type: Number,
         required: true,
@@ -24,7 +24,7 @@ const productSchema = new Schema({
         default: 0,
     },
     stock: {
-        type: String,
+        type: Number,
         default: 0,
         required: true,
     },
